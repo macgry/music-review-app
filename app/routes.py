@@ -78,11 +78,11 @@ from app.forms import CommentForm
 def album_detail(album_id):
     cursor = mysql.connection.cursor()
 
-    # Pobierz dane albumu
+    # Pobierz album
     cursor.execute("SELECT * FROM albums WHERE id = %s", (album_id,))
     album = cursor.fetchone()
 
-    # Pobierz recenzje + ich ID
+    # Pobierz recenzje z info o autorze
     cursor.execute("""
         SELECT r.id, r.rating, r.content, r.created_at, u.username, u.id
         FROM reviews r
@@ -92,12 +92,12 @@ def album_detail(album_id):
     """, (album_id,))
     reviews = cursor.fetchall()
 
-    # Mapa: review_id → lista komentarzy
+    # Pobierz komentarze dla każdej recenzji
     comments_by_review = {}
     for review in reviews:
         review_id = review[0]
         cursor.execute("""
-            SELECT c.content, c.created_at, u.username
+            SELECT c.content, c.created_at, u.username, u.id, c.id
             FROM comments c
             JOIN users u ON c.user_id = u.id
             WHERE c.review_id = %s
@@ -105,22 +105,43 @@ def album_detail(album_id):
         """, (review_id,))
         comments_by_review[review_id] = cursor.fetchall()
 
-    # Obsługa komentarzy (1 formularz per recenzja)
+    form = ReviewForm()
+
+    # 🔁 Rozdziel logikę recenzji i komentarzy
     if request.method == 'POST':
-        review_id = int(request.form.get('review_id'))
-        comment_text = request.form.get('content')
-        if comment_text:
-            cursor.execute("""
-                INSERT INTO comments (review_id, user_id, content)
-                VALUES (%s, %s, %s)
-            """, (review_id, current_user.id, comment_text))
-            mysql.connection.commit()
-            flash('Comment posted!', 'success')
-            return redirect(url_for('album_detail', album_id=album_id))
+        form_type = request.form.get('form_type')
+
+        if form_type == 'comment':
+            review_id = request.form.get('review_id')
+            content = request.form.get('content')
+            if review_id and content:
+                cursor.execute("""
+                    INSERT INTO comments (review_id, user_id, content)
+                    VALUES (%s, %s, %s)
+                """, (review_id, current_user.id, content))
+                mysql.connection.commit()
+                flash("Comment added!", "success")
+                return redirect(url_for('album_detail', album_id=album_id))
+
+        elif form_type == 'review':
+            print("FORMULARZ NIE PRZESZEDŁ WALIDACJI:", form.errors)
+            if form.validate_on_submit():
+                cursor.execute("""
+                    INSERT INTO reviews (user_id, album_id, rating, content)
+                    VALUES (%s, %s, %s, %s)
+                """, (current_user.id, album_id, form.rating.data, form.content.data))
+                mysql.connection.commit()
+                flash("Review added!", "success")
+                return redirect(url_for('album_detail', album_id=album_id))
 
     cursor.close()
-    form = ReviewForm()
-    return render_template('album_detail.html', album=album, reviews=reviews, comments_by_review=comments_by_review, form=form)
+    return render_template(
+        'album_detail.html',
+        album=album,
+        reviews=reviews,
+        comments_by_review=comments_by_review,
+        form=form
+    )
 
 @app.route('/profile/<int:user_id>')
 @login_required
@@ -186,7 +207,7 @@ def delete_review(review_id):
         flash("Review not found.", "warning")
         return redirect(url_for('home'))
 
-    if review[0] != current_user.id:
+    if review[0] != current_user.id and not current_user.is_admin:
         flash("You can't delete someone else's review.", "danger")
         return redirect(url_for('home'))
 
@@ -194,6 +215,7 @@ def delete_review(review_id):
     mysql.connection.commit()
     flash("Review deleted.", "info")
     return redirect(url_for('album_detail', album_id=review[1]))
+
 # Wyświetlenie użytkowników i statusu znajomości
 @app.route('/users')
 @login_required
@@ -284,3 +306,23 @@ def change_password():
             return redirect(url_for('profile', user_id=current_user.id))
 
     return render_template('change_password.html', form=form)
+
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT user_id, review_id FROM comments WHERE id = %s", (comment_id,))
+    comment = cursor.fetchone()
+
+    if not comment:
+        flash("Comment not found.", "warning")
+        return redirect(url_for('home'))
+
+    if comment[0] != current_user.id and not current_user.is_admin:
+        flash("You can't delete this comment.", "danger")
+        return redirect(url_for('home'))
+
+    cursor.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
+    mysql.connection.commit()
+    flash("Comment deleted.", "info")
+    return redirect(request.referrer or url_for('home'))

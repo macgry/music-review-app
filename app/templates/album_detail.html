@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if album[5] %}
+    <img src="{{ album[5] }}" alt="Cover" style="max-width: 200px; margin-bottom: 15px;">
+{% endif %}
 <h2>{{ album[1] }} - {{ album[2] }}</h2>
 <p><strong>Genre:</strong> {{ album[3] }} | <strong>Released:</strong> {{ album[4] }}</p>
 
 <h3>Write a review:</h3>
 <form method="POST">
-    {{ form.rating.label }} {{ form.rating() }}<br>
+    {{ form.hidden_tag() }}
+    <input type="hidden" name="form_type" value="review">
+    {{ form.rating.label }} {{ form.rating(type="number", min="1", max="5") }}<br>
     {{ form.content.label }}<br>
     {{ form.content(rows=4, cols=40) }}<br>
     {{ form.submit() }}
@@ -17,19 +22,32 @@
     <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
         <strong>{{ review[4] }}</strong> rated: {{ review[1] }}/5<br>
         <p>{{ review[2] }}</p>
-        <small>{{ review[3] }}</small>
+        <small>{{ review[3] }}</small><br>
+
+        {% if review[5] == current_user.id or current_user.is_admin %}
+            <form method="POST" action="{{ url_for('delete_review', review_id=review[0]) }}" style="display:inline;">
+                <button type="submit">Delete Review</button>
+            </form>
+        {% endif %}
 
         <h4>Comments:</h4>
         {% for comment in comments_by_review.get(review[0], []) %}
             <div style="margin-left: 15px;">
                 <strong>{{ comment[2] }}</strong>: {{ comment[0] }}<br>
                 <small>{{ comment[1] }}</small>
+
+                {% if comment[3] == current_user.id or current_user.is_admin %}
+                    <form method="POST" action="{{ url_for('delete_comment', comment_id=comment[4]) }}" style="display:inline;">
+                        <button type="submit">Delete Comment</button>
+                    </form>
+                {% endif %}
             </div>
         {% else %}
             <div style="margin-left: 15px;">No comments yet.</div>
         {% endfor %}
 
         <form method="POST" style="margin-top: 10px;">
+            <input type="hidden" name="form_type" value="comment">
             <input type="hidden" name="review_id" value="{{ review[0] }}">
             <textarea name="content" rows="2" cols="50" placeholder="Add a comment..."></textarea><br>
             <button type="submit">Post Comment</button>
