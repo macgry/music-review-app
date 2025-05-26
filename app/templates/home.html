@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Albumy:</h1>
+<ul>
+    {% for album in albums %}
+        <li><a href="{{ url_for('album_detail', album_id=album[0]) }}">{{ album[1] }} - {{ album[2] }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

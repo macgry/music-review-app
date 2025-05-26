@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Users</h2>
+<ul>
+{% for user in users %}
+    <li>
+        {{ user[1] }}
+        {% set relation = relation_map.get((current_user_id, user[0])) or relation_map.get((user[0], current_user_id)) %}
+        {% if relation == 'accepted' %}
+            - Friends
+        {% elif relation == 'pending' and (user[0], current_user_id) in relation_map %}
+            - <a href="{{ url_for('accept_friend', sender_id=user[0]) }}">Accept?</a>
+        {% elif relation == 'pending' %}
+            - Pending...
+        {% else %}
+            - <a href="{{ url_for('add_friend', user_id=user[0]) }}">Add friend</a>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

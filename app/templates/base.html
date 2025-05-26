@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Music Review App</title>
+</head>
+<body>
+    <nav>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('profile', user_id=current_user.id) }}">My Profile</a>
+            <a href="{{ url_for('users') }}">Find Friends</a>
+            <a href="{{ url_for('change_password') }}">Change Password</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </nav>
+    <div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

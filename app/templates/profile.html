@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Profile: {{ user[0] }}</h2>
+<h3>Reviews:</h3>
+{% for review in reviews %}
+    <div>
+        <strong>{{ review[0] }} - {{ review[1] }}</strong><br>
+        Rated: {{ review[2] }}/5<br>
+        {{ review[3] }}<br>
+        <small>{{ review[4] }}</small>
+    </div>
+    <hr>
+{% else %}
+    <p>No reviews yet.</p>
+{% endfor %}
+{% endblock %}
