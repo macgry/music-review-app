@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, DateField
 from wtforms.validators import DataRequired, Length, EqualTo
 
 class RegisterForm(FlaskForm):
@@ -30,3 +30,11 @@ class ChangePasswordForm(FlaskForm):
 class CommentForm(FlaskForm):
     content = TextAreaField('Add a comment', validators=[DataRequired(), Length(min=1, max=500)])
     submit = SubmitField('Post Comment')
+
+class AlbumProposalForm(FlaskForm):
+    title = StringField('Album Title', validators=[DataRequired()])
+    artist = StringField('Artist', validators=[DataRequired()])
+    genre = StringField('Genre')
+    release_date = DateField('Release Date', format='%Y-%m-%d')
+    cover_url = StringField('Cover Image URL')
+    submit = SubmitField('Submit Proposal')

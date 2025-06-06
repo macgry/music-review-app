@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Pending Album Proposals</h2>
+
+{% if proposals %}
+    {% for proposal in proposals %}
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+            <strong>{{ proposal[1] }}</strong> by <em>{{ proposal[2] }}</em><br>
+            <strong>Genre:</strong> {{ proposal[3] }}<br>
+            <strong>Release Date:</strong> {{ proposal[4] }}<br>
+            {% if proposal[5] %}
+                <img src="{{ proposal[5] }}" alt="Cover" style="max-width: 150px; margin-top: 10px;"><br>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('approve_album', proposal_id=proposal[0]) }}" style="display:inline;">
+                <button type="submit">✅ Approve</button>
+            </form>
+            
+            <form method="POST" action="{{ url_for('reject_album', proposal_id=proposal[0]) }}" style="display:inline; margin-left: 10px;">
+                <button type="submit" style="background-color: #e74c3c; color: white;">❌ Reject</button>
+            </form>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No pending proposals.</p>
+{% endif %}
+{% endblock %}

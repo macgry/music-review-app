@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Propose a New Album</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div>
+        {{ form.title.label }}<br>
+        {{ form.title(size=40) }}
+    </div>
+    <div>
+        {{ form.artist.label }}<br>
+        {{ form.artist(size=40) }}
+    </div>
+    <div>
+        {{ form.genre.label }}<br>
+        {{ form.genre(size=30) }}
+    </div>
+    <div>
+        {{ form.release_date.label }} (YYYY-MM-DD)<br>
+        {{ form.release_date() }}
+    </div>
+    <div>
+        {{ form.cover_url.label }}<br>
+        {{ form.cover_url(size=60) }}
+    </div>
+    <br>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+{% endblock %}

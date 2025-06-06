@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request
 from app import app, mysql
-from app.forms import RegisterForm, LoginForm, ChangePasswordForm, CommentForm
+from app.forms import RegisterForm, LoginForm, ChangePasswordForm, CommentForm, AlbumProposalForm
 from app.models import User
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -326,3 +326,63 @@ def delete_comment(comment_id):
     mysql.connection.commit()
     flash("Comment deleted.", "info")
     return redirect(request.referrer or url_for('home'))
+
+@app.route('/propose_album', methods=['GET', 'POST'])
+@login_required
+def propose_album():
+    form = AlbumProposalForm()
+    if form.validate_on_submit():
+        cursor = mysql.connection.cursor()
+        cursor.execute("""
+            INSERT INTO pending_albums (title, artist, genre, release_date, cover_url, submitted_by)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            form.title.data, form.artist.data, form.genre.data,
+            form.release_date.data, form.cover_url.data, current_user.id
+        ))
+        mysql.connection.commit()
+        flash('Album proposal submitted! Waiting for admin approval.', 'info')
+        return redirect(url_for('home'))
+    return render_template('propose_album.html', form=form)
+
+@app.route('/admin/album_proposals')
+@login_required
+def album_proposals():
+    if not current_user.is_admin:
+        abort(403)
+    cursor = mysql.connection.cursor()
+    cursor.execute("""
+        SELECT id, title, artist, genre, release_date, cover_url, submitted_by FROM pending_albums
+        ORDER BY created_at DESC
+    """)
+    proposals = cursor.fetchall()
+    return render_template('album_proposals.html', proposals=proposals)
+
+@app.route('/admin/approve_album/<int:proposal_id>', methods=['POST'])
+@login_required
+def approve_album(proposal_id):
+    if not current_user.is_admin:
+        abort(403)
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT title, artist, genre, release_date, cover_url FROM pending_albums WHERE id = %s", (proposal_id,))
+    album = cursor.fetchone()
+    if album:
+        cursor.execute("""
+            INSERT INTO albums (title, artist, genre, release_date, cover_url)
+            VALUES (%s, %s, %s, %s, %s)
+        """, album)
+        cursor.execute("DELETE FROM pending_albums WHERE id = %s", (proposal_id,))
+        mysql.connection.commit()
+        flash('Album approved and added!', 'success')
+    return redirect(url_for('album_proposals'))
+
+@app.route('/admin/reject_album/<int:proposal_id>', methods=['POST'])
+@login_required
+def reject_album(proposal_id):
+    if not current_user.is_admin:
+        abort(403)
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM pending_albums WHERE id = %s", (proposal_id,))
+    mysql.connection.commit()
+    flash('Album proposal rejected and removed.', 'warning')
+    return redirect(url_for('album_proposals'))
