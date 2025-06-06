@@ -7,6 +7,18 @@
 <h2>{{ album[1] }} - {{ album[2] }}</h2>
 <p><strong>Genre:</strong> {{ album[3] }} | <strong>Released:</strong> {{ album[4] }}</p>
 
+<form method="POST" action="{{ url_for('like_album', album_id=album[0]) }}" style="display:inline;">
+    <button type="submit">
+        ❤️ {% if album_liked %}Unlike{% else %}Like{% endif %}
+    </button>
+</form>
+
+<form method="POST" action="{{ url_for('toggle_listen_later', album_id=album[0]) }}" style="display:inline; margin-left: 10px;">
+    <button type="submit">
+        🎧 {% if album_in_listen_later %}Remove from Listen Later{% else %}Add to Listen Later{% endif %}
+    </button>
+</form>
+
 <h3>Write a review:</h3>
 <form method="POST">
     {{ form.hidden_tag() }}

@@ -2,6 +2,7 @@
 
 {% block content %}
 <h2>Profile: {{ user[0] }}</h2>
+
 <h3>Reviews:</h3>
 {% for review in reviews %}
     <div>
@@ -14,4 +15,40 @@
 {% else %}
     <p>No reviews yet.</p>
 {% endfor %}
+
+<h3>Liked Albums:</h3>
+{% if liked_albums %}
+    <ul>
+        {% for album in liked_albums %}
+            <li>
+                {% if album[3] %}
+                    <img src="{{ album[3] }}" alt="Cover" style="height: 50px; vertical-align: middle;">
+                {% endif %}
+                <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                    {{ album[1] }} - {{ album[2] }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No liked albums.</p>
+{% endif %}
+
+<h3>Listen Later:</h3>
+{% if to_listen_albums %}
+    <ul>
+        {% for album in to_listen_albums %}
+            <li>
+                {% if album[3] %}
+                    <img src="{{ album[3] }}" alt="Cover" style="height: 50px; vertical-align: middle;">
+                {% endif %}
+                <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                    {{ album[1] }} - {{ album[2] }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No albums saved to listen later.</p>
+{% endif %}
 {% endblock %}

@@ -49,7 +49,7 @@ def login():
         cursor.close()
 
         if data:
-            # Uwaga: Twoja tabela users ma kolumny: id, username, password_hash
+            # Tabela users ma kolumny: id, username, password_hash
             user = User(id=data[0], username=data[1], password=data[2])
 
             if check_password_hash(user.password, password):
@@ -105,9 +105,17 @@ def album_detail(album_id):
         """, (review_id,))
         comments_by_review[review_id] = cursor.fetchall()
 
+    # Sprawdź, czy użytkownik polubił album
+    cursor.execute("SELECT * FROM liked_albums WHERE user_id = %s AND album_id = %s", (current_user.id, album_id))
+    album_liked = cursor.fetchone() is not None
+
+    # Sprawdź, czy album jest dodany do 'do przesłuchania'
+    cursor.execute("SELECT * FROM to_listen_albums WHERE user_id = %s AND album_id = %s", (current_user.id, album_id))
+    album_in_listen_later = cursor.fetchone() is not None
+
     form = ReviewForm()
 
-    # 🔁 Rozdziel logikę recenzji i komentarzy
+    # Rozdziel logikę recenzji i komentarzy
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
@@ -140,7 +148,9 @@ def album_detail(album_id):
         album=album,
         reviews=reviews,
         comments_by_review=comments_by_review,
-        form=form
+        form=form,
+        album_liked=album_liked,
+        album_in_listen_later=album_in_listen_later
     )
 
 @app.route('/profile/<int:user_id>')
@@ -148,9 +158,11 @@ def album_detail(album_id):
 def profile(user_id):
     cursor = mysql.connection.cursor()
 
+    # Nazwa użytkownika
     cursor.execute("SELECT username FROM users WHERE id = %s", (user_id,))
     user = cursor.fetchone()
 
+    # Recenzje użytkownika
     cursor.execute("""
         SELECT a.title, a.artist, r.rating, r.content, r.created_at
         FROM reviews r
@@ -159,9 +171,34 @@ def profile(user_id):
         ORDER BY r.created_at DESC
     """, (user_id,))
     reviews = cursor.fetchall()
+
+    # Polubione albumy
+    cursor.execute("""
+        SELECT a.id, a.title, a.artist, a.cover_url
+        FROM albums a
+        JOIN liked_albums l ON a.id = l.album_id
+        WHERE l.user_id = %s
+    """, (user_id,))
+    liked_albums = cursor.fetchall()
+
+    # Albumy "do przesłuchania"
+    cursor.execute("""
+        SELECT a.id, a.title, a.artist, a.cover_url
+        FROM albums a
+        JOIN to_listen_albums t ON a.id = t.album_id
+        WHERE t.user_id = %s
+    """, (user_id,))
+    to_listen_albums = cursor.fetchall()
+
     cursor.close()
 
-    return render_template('profile.html', user=user, reviews=reviews)
+    return render_template(
+        'profile.html',
+        user=user,
+        reviews=reviews,
+        liked_albums=liked_albums,
+        to_listen_albums=to_listen_albums
+    )
 
 @app.route('/review/<int:review_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -222,23 +259,108 @@ def delete_review(review_id):
 def users():
     cursor = mysql.connection.cursor()
 
+    # Pobierz wszystkich użytkowników (oprócz siebie)
     cursor.execute("SELECT id, username FROM users WHERE id != %s", (current_user.id,))
     users = cursor.fetchall()
 
-    # Pobierz relacje
-    cursor.execute("""
-        SELECT sender_id, receiver_id, status FROM friends
-        WHERE sender_id = %s OR receiver_id = %s
-    """, (current_user.id, current_user.id))
+    # Pobierz relacje znajomych
+    cursor.execute("SELECT sender_id, receiver_id, status FROM friends")
     relations = cursor.fetchall()
-    cursor.close()
-
     relation_map = {}
-    for s_id, r_id, status in relations:
-        key = (s_id, r_id)
-        relation_map[key] = status
+    for sender_id, receiver_id, status in relations:
+        relation_map[(sender_id, receiver_id)] = status
 
-    return render_template('users.html', users=users, relation_map=relation_map, current_user_id=current_user.id)
+    # Pobierz ID znajomych zaakceptowanych
+    friend_ids = []
+    for (s_id, r_id), status in relation_map.items():
+        if status == "accepted":
+            if s_id == current_user.id:
+                friend_ids.append(r_id)
+            elif r_id == current_user.id:
+                friend_ids.append(s_id)
+
+    # Ostatnie recenzje znajomych
+    recent_friend_reviews = []
+    if friend_ids:
+        cursor.execute("""
+            SELECT r.album_id, a.title, r.rating, r.content, r.created_at, u.username
+            FROM reviews r
+            JOIN albums a ON r.album_id = a.id
+            JOIN users u ON r.user_id = u.id
+            WHERE r.user_id IN %s
+            ORDER BY r.created_at DESC
+            LIMIT 10
+        """, (tuple(friend_ids),))
+        rows = cursor.fetchall()
+        for row in rows:
+            recent_friend_reviews.append({
+                "album_id": row[0],
+                "album_title": row[1],
+                "rating": row[2],
+                "content": row[3],
+                "created_at": row[4],
+                "username": row[5]
+            })
+
+    # Aktywność znajomych
+    friend_activity = []
+    if friend_ids:
+        # Likes
+        cursor.execute("""
+            SELECT u.username, a.title
+            FROM liked_albums l
+            JOIN users u ON l.user_id = u.id
+            JOIN albums a ON l.album_id = a.id
+            WHERE l.user_id IN %s
+            ORDER BY a.title DESC
+            LIMIT 10
+        """, (tuple(friend_ids),))
+        for username, album_title in cursor.fetchall():
+            friend_activity.append(f"{username} liked album '{album_title}'")
+
+        # Listen later
+        cursor.execute("""
+            SELECT u.username, a.title
+            FROM to_listen_albums t
+            JOIN users u ON t.user_id = u.id
+            JOIN albums a ON t.album_id = a.id
+            WHERE t.user_id IN %s
+            ORDER BY a.title DESC
+            LIMIT 10
+        """, (tuple(friend_ids),))
+        for username, album_title in cursor.fetchall():
+            friend_activity.append(f"{username} added album '{album_title}' to Listen Later")
+
+    # Wspólne polubione albumy
+    shared_likes = []
+    if friend_ids:
+        for friend_id in friend_ids:
+            # Pobierz wspólne albumy polubione
+            cursor.execute("""
+                SELECT a.id, a.title, u.username
+                FROM liked_albums l1
+                JOIN liked_albums l2 ON l1.album_id = l2.album_id
+                JOIN albums a ON a.id = l1.album_id
+                JOIN users u ON u.id = l2.user_id
+                WHERE l1.user_id = %s AND l2.user_id = %s AND l1.user_id != l2.user_id
+            """, (current_user.id, friend_id))
+            for album_id, album_title, friend_username in cursor.fetchall():
+                shared_likes.append({
+                    "album_id": album_id,
+                    "album_title": album_title,
+                    "friend_username": friend_username
+                })
+
+    cursor.close()
+    return render_template(
+        'users.html',
+        users=users,
+        relation_map=relation_map,
+        current_user_id=current_user.id,
+        recent_friend_reviews=recent_friend_reviews,
+        friend_activity=friend_activity,
+        shared_likes=shared_likes
+    )
 
 # Wysyłanie zaproszenia
 @app.route('/add_friend/<int:user_id>')
@@ -386,3 +508,27 @@ def reject_album(proposal_id):
     mysql.connection.commit()
     flash('Album proposal rejected and removed.', 'warning')
     return redirect(url_for('album_proposals'))
+
+@app.route('/like_album/<int:album_id>', methods=['POST'])
+@login_required
+def like_album(album_id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM liked_albums WHERE user_id = %s AND album_id = %s", (current_user.id, album_id))
+    if cursor.fetchone():
+        cursor.execute("DELETE FROM liked_albums WHERE user_id = %s AND album_id = %s", (current_user.id, album_id))
+    else:
+        cursor.execute("INSERT INTO liked_albums (user_id, album_id) VALUES (%s, %s)", (current_user.id, album_id))
+    mysql.connection.commit()
+    return redirect(request.referrer)
+
+@app.route('/toggle_listen_later/<int:album_id>', methods=['POST'])
+@login_required
+def toggle_listen_later(album_id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM to_listen_albums WHERE user_id = %s AND album_id = %s", (current_user.id, album_id))
+    if cursor.fetchone():
+        cursor.execute("DELETE FROM to_listen_albums WHERE user_id = %s AND album_id = %s", (current_user.id, album_id))
+    else:
+        cursor.execute("INSERT INTO to_listen_albums (user_id, album_id) VALUES (%s, %s)", (current_user.id, album_id))
+    mysql.connection.commit()
+    return redirect(request.referrer)

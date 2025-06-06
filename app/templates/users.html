@@ -1,7 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Users</h2>
+<h2>Friends Section</h2>
+
+<!-- 1. Ostatnie recenzje znajomych -->
+<h3>Recent Reviews by Friends</h3>
+{% if recent_friend_reviews %}
+    <ul>
+        {% for review in recent_friend_reviews %}
+            <li>
+                <strong>{{ review.username }}</strong> reviewed 
+                <a href="{{ url_for('album_detail', album_id=review.album_id) }}">{{ review.album_title }}</a> 
+                ({{ review.rating }}/5): "{{ review.content[:100] }}..."
+                <small>on {{ review.created_at.strftime('%Y-%m-%d') }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No reviews from friends yet.</p>
+{% endif %}
+
+<!-- 2. Aktywność znajomych -->
+<h3>Friends' Activity</h3>
+{% if friend_activity %}
+    <ul>
+        {% for activity in friend_activity %}
+            <li>{{ activity }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No recent activity from friends.</p>
+{% endif %}
+
+<!-- 3. Wspólne albumy -->
+<h3>Shared Album Likes</h3>
+{% if shared_likes %}
+    <ul>
+        {% for item in shared_likes %}
+            <li>
+                You and <strong>{{ item.friend_username }}</strong> both like 
+                <a href="{{ url_for('album_detail', album_id=item.album_id) }}">{{ item.album_title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No shared likes yet.</p>
+{% endif %}
+
+<!-- 4. Lista użytkowników -->
+<h2>Find Friends</h2>
 <ul>
 {% for user in users %}
     <li>
