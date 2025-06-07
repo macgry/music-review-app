@@ -1,0 +1,98 @@
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    background-color: #1d4d31;
+    padding: 15px 20px;
+    border-bottom: 1px solid #edfcbf;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* 🧭 Pozioma nawigacja jako przyciski */
+.navbar {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0 0 0;
+    padding: 0;
+}
+
+.navbar li a {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #2e7047;
+    border-radius: 20px;
+    color: #edfcbf;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.navbar li a:hover {
+    background-color: #3e8d5b;
+    text-decoration: none;
+}
+
+/* Inne ustawienia */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #235c39;
+    color: #edfcbf;
+}
+
+a {
+    color: #b2f2bb;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.logo {
+    height: 60px;
+}
+
+/* Flash messages */
+.flash.success { background-color: #2d733f; color: #bafac5; }
+.flash.warning { background-color: #856404; color: #fff3cd; }
+.flash.danger  { background-color: #721c24; color: #f8d7da; }
+.flash.info    { background-color: #0c5460; color: #d1ecf1; }
+
+/* Albumy w siatce */
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.album-card {
+    background-color: #1a3f2c;
+    border: 1px solid #edfcbf55;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    color: #edfcbf;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.album-card a:hover {
+    color: #ffffff;
+}
+
+.album-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}

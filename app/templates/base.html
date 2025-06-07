@@ -1,32 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-    <title>Aplikacja Recenzji Muzyki</title>
+    <meta charset="UTF-8">
+    <title>Musicnote</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav>
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('home') }}">Strona główna</a>
-            <a href="{{ url_for('logout') }}">Wyloguj się</a>
-            <a href="{{ url_for('profile', user_id=current_user.id) }}">Mój profil</a>
-            <a href="{{ url_for('users') }}">Znajomi</a>
-            <a href="{{ url_for('change_password') }}">Zmień hasło</a>
-            <a href="{{ url_for('propose_album') }}">Zaproponuj album</a>
-            {% if current_user.is_admin %}
-                <a href="{{ url_for('album_proposals') }}">Propozycje albumów</a>
-            {% endif %}
-        {% else %}
-            <a href="{{ url_for('login') }}">Zaloguj się</a>
-            <a href="{{ url_for('register') }}">Zarejestruj się</a>
-        {% endif %}
-    </nav>
-    <div>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='musicnote.png') }}" alt="Logo" class="logo">
+        </div>
+        <nav>
+            <ul class="navbar">
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('home') }}">Strona główna</a></li>
+                    <li><a href="{{ url_for('profile', user_id=current_user.id) }}">Mój profil</a></li>
+                    <li><a href="{{ url_for('users') }}">Znajomi</a></li>
+                    <li><a href="{{ url_for('propose_album') }}">Zaproponuj album</a></li>
+                    <li><a href="{{ url_for('change_password') }}">Zmień hasło</a></li>
+                    {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('album_proposals') }}">Propozycje albumów</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}">Wyloguj się</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Zaloguj się</a></li>
+                    <li><a href="{{ url_for('register') }}">Zarejestruj się</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% for category, message in messages %}
-                <p class="{{ category }}">{{ message }}</p>
+                <div class="flash {{ category }}">{{ message }}</div>
             {% endfor %}
         {% endwith %}
+
         {% block content %}{% endblock %}
-    </div>
+    </main>
 </body>
 </html>

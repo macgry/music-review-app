@@ -1,10 +1,19 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h1>Albumy:</h1>
-<ul>
+{% block content %} 
+<div class="album-grid">
     {% for album in albums %}
-        <li><a href="{{ url_for('album_detail', album_id=album[0]) }}">{{ album[1] }} - {{ album[2] }}</a></li>
+    <div class="album-card">
+        {% if album[5] %}
+            <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                <img src="{{ album[5] }}" alt="Okładka albumu">
+            </a>
+        {% endif %}
+        <h4>
+            <a href="{{ url_for('album_detail', album_id=album[0]) }}">{{ album[1] }}</a>
+        </h4>
+        <p>{{ album[2] }}</p>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}
