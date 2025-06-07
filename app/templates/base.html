@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Music Review App</title>
+    <title>Aplikacja Recenzji Muzyki</title>
 </head>
 <body>
     <nav>
         {% if current_user.is_authenticated %}
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-            <a href="{{ url_for('profile', user_id=current_user.id) }}">My Profile</a>
-            <a href="{{ url_for('users') }}">Find Friends</a>
-            <a href="{{ url_for('change_password') }}">Change Password</a>
-            <a href="{{ url_for('propose_album') }}">Propose Album</a>
+            <a href="{{ url_for('home') }}">Strona główna</a>
+            <a href="{{ url_for('logout') }}">Wyloguj się</a>
+            <a href="{{ url_for('profile', user_id=current_user.id) }}">Mój profil</a>
+            <a href="{{ url_for('users') }}">Znajomi</a>
+            <a href="{{ url_for('change_password') }}">Zmień hasło</a>
+            <a href="{{ url_for('propose_album') }}">Zaproponuj album</a>
             {% if current_user.is_admin %}
-                <a href="{{ url_for('album_proposals') }}">Album Proposals</a>
+                <a href="{{ url_for('album_proposals') }}">Propozycje albumów</a>
             {% endif %}
         {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
-            <a href="{{ url_for('register') }}">Register</a>
+            <a href="{{ url_for('login') }}">Zaloguj się</a>
+            <a href="{{ url_for('register') }}">Zarejestruj się</a>
         {% endif %}
     </nav>
     <div>

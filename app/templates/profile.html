@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Profile: {{ user[0] }}</h2>
+<h2>Profil: {{ user[0] }}</h2>
 
-<h3>Reviews:</h3>
+<h3>Recenzje:</h3>
 {% for review in reviews %}
     <div>
         <strong>{{ review[0] }} - {{ review[1] }}</strong><br>
-        Rated: {{ review[2] }}/5<br>
+        Ocena: {{ review[2] }}/5<br>
         {{ review[3] }}<br>
         <small>{{ review[4] }}</small>
     </div>
     <hr>
 {% else %}
-    <p>No reviews yet.</p>
+    <p>Brak recenzji.</p>
 {% endfor %}
 
-<h3>Liked Albums:</h3>
+<h3>Polubione albumy:</h3>
 {% if liked_albums %}
     <ul>
         {% for album in liked_albums %}
             <li>
                 {% if album[3] %}
-                    <img src="{{ album[3] }}" alt="Cover" style="height: 50px; vertical-align: middle;">
+                    <img src="{{ album[3] }}" alt="Okładka" style="height: 50px; vertical-align: middle;">
                 {% endif %}
                 <a href="{{ url_for('album_detail', album_id=album[0]) }}">
                     {{ album[1] }} - {{ album[2] }}
@@ -31,16 +31,16 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p>No liked albums.</p>
+    <p>Brak polubionych albumów.</p>
 {% endif %}
 
-<h3>Listen Later:</h3>
+<h3>Do przesłuchania:</h3>
 {% if to_listen_albums %}
     <ul>
         {% for album in to_listen_albums %}
             <li>
                 {% if album[3] %}
-                    <img src="{{ album[3] }}" alt="Cover" style="height: 50px; vertical-align: middle;">
+                    <img src="{{ album[3] }}" alt="Okładka" style="height: 50px; vertical-align: middle;">
                 {% endif %}
                 <a href="{{ url_for('album_detail', album_id=album[0]) }}">
                     {{ album[1] }} - {{ album[2] }}
@@ -49,6 +49,6 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p>No albums saved to listen later.</p>
+    <p>Brak albumów zapisanych do przesłuchania.</p>
 {% endif %}
 {% endblock %}

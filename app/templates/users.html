@@ -1,27 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Friends Section</h2>
+<h2>Znajomi</h2>
 
-<!-- 1. Ostatnie recenzje znajomych -->
-<h3>Recent Reviews by Friends</h3>
+<h3>Ostatnie recenzje znajomych</h3>
 {% if recent_friend_reviews %}
     <ul>
         {% for review in recent_friend_reviews %}
             <li>
-                <strong>{{ review.username }}</strong> reviewed 
+                <strong>{{ review.username }}</strong> zrecenzował(a) 
                 <a href="{{ url_for('album_detail', album_id=review.album_id) }}">{{ review.album_title }}</a> 
-                ({{ review.rating }}/5): "{{ review.content[:100] }}..."
-                <small>on {{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                ({{ review.rating }}/5): „{{ review.content[:100] }}...”
+                <small>dnia {{ review.created_at.strftime('%Y-%m-%d') }}</small>
             </li>
         {% endfor %}
     </ul>
 {% else %}
-    <p>No reviews from friends yet.</p>
+    <p>Brak recenzji od znajomych.</p>
 {% endif %}
 
-<!-- 2. Aktywność znajomych -->
-<h3>Friends' Activity</h3>
+<h3>Aktywność znajomych</h3>
 {% if friend_activity %}
     <ul>
         {% for activity in friend_activity %}
@@ -29,39 +27,37 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p>No recent activity from friends.</p>
+    <p>Brak ostatniej aktywności znajomych.</p>
 {% endif %}
 
-<!-- 3. Wspólne albumy -->
-<h3>Shared Album Likes</h3>
+<h3>Wspólne polubione albumy</h3>
 {% if shared_likes %}
     <ul>
         {% for item in shared_likes %}
             <li>
-                You and <strong>{{ item.friend_username }}</strong> both like 
+                Ty i <strong>{{ item.friend_username }}</strong> lubicie 
                 <a href="{{ url_for('album_detail', album_id=item.album_id) }}">{{ item.album_title }}</a>
             </li>
         {% endfor %}
     </ul>
 {% else %}
-    <p>No shared likes yet.</p>
+    <p>Brak wspólnych polubień.</p>
 {% endif %}
 
-<!-- 4. Lista użytkowników -->
-<h2>Find Friends</h2>
+<h2>Znajdź znajomych</h2>
 <ul>
 {% for user in users %}
     <li>
         {{ user[1] }}
         {% set relation = relation_map.get((current_user_id, user[0])) or relation_map.get((user[0], current_user_id)) %}
         {% if relation == 'accepted' %}
-            - Friends
+            - Znajomi
         {% elif relation == 'pending' and (user[0], current_user_id) in relation_map %}
-            - <a href="{{ url_for('accept_friend', sender_id=user[0]) }}">Accept?</a>
+            - <a href="{{ url_for('accept_friend', sender_id=user[0]) }}">Zaakceptować?</a>
         {% elif relation == 'pending' %}
-            - Pending...
+            - Oczekuje...
         {% else %}
-            - <a href="{{ url_for('add_friend', user_id=user[0]) }}">Add friend</a>
+            - <a href="{{ url_for('add_friend', user_id=user[0]) }}">Dodaj do znajomych</a>
         {% endif %}
     </li>
 {% endfor %}

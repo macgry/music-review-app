@@ -1,40 +1,37 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, DateField
-from wtforms.validators import DataRequired, Length, EqualTo
+from wtforms import StringField, PasswordField, SubmitField, DateField, TextAreaField, IntegerField
+from wtforms.validators import DataRequired, Length, EqualTo, NumberRange, URL
 
 class RegisterForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    confirm = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Register')
+    username = StringField('Nazwa użytkownika', validators=[DataRequired(), Length(min=4, max=25)])
+    password = PasswordField('Hasło', validators=[DataRequired(), Length(min=6)])
+    confirm = PasswordField('Potwierdź hasło', validators=[DataRequired(), EqualTo('password', message='Hasła muszą być takie same')])
+    submit = SubmitField('Zarejestruj się')
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
-
-from wtforms import TextAreaField, IntegerField
-from wtforms.validators import NumberRange
+    username = StringField('Nazwa użytkownika', validators=[DataRequired()])
+    password = PasswordField('Hasło', validators=[DataRequired()])
+    submit = SubmitField('Zaloguj się')
 
 class ReviewForm(FlaskForm):
-    rating = IntegerField('Rating (1–5)', validators=[DataRequired(), NumberRange(min=1, max=5)])
-    content = TextAreaField('Your review', validators=[DataRequired()])
-    submit = SubmitField('Submit Review')
+    rating = IntegerField('Ocena (1–5)', validators=[DataRequired(), NumberRange(min=1, max=5)])
+    content = TextAreaField('Twoja recenzja', validators=[DataRequired()])
+    submit = SubmitField('Dodaj recenzję')
 
 class ChangePasswordForm(FlaskForm):
-    current_password = PasswordField('Current Password', validators=[DataRequired()])
-    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
-    confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
-    submit = SubmitField('Change Password')
+    current_password = PasswordField('Obecne hasło', validators=[DataRequired()])
+    new_password = PasswordField('Nowe hasło', validators=[DataRequired(), Length(min=6)])
+    confirm_new_password = PasswordField('Potwierdź nowe hasło', validators=[DataRequired(), EqualTo('new_password', message='Hasła muszą być takie same')])
+    submit = SubmitField('Zmień hasło')
 
 class CommentForm(FlaskForm):
-    content = TextAreaField('Add a comment', validators=[DataRequired(), Length(min=1, max=500)])
-    submit = SubmitField('Post Comment')
+    content = TextAreaField('Dodaj komentarz', validators=[DataRequired(), Length(min=1, max=500)])
+    submit = SubmitField('Dodaj komentarz')
 
 class AlbumProposalForm(FlaskForm):
-    title = StringField('Album Title', validators=[DataRequired()])
-    artist = StringField('Artist', validators=[DataRequired()])
-    genre = StringField('Genre')
-    release_date = DateField('Release Date', format='%Y-%m-%d')
-    cover_url = StringField('Cover Image URL')
-    submit = SubmitField('Submit Proposal')
+    title = StringField('Tytuł albumu', validators=[DataRequired()])
+    artist = StringField('Artysta', validators=[DataRequired()])
+    genre = StringField('Gatunek')
+    release_date = DateField('Data wydania', format='%Y-%m-%d')
+    cover_url = StringField('URL okładki', validators=[URL(require_tld=True, message='Podaj poprawny adres URL')])
+    submit = SubmitField('Zaproponuj album')

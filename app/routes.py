@@ -26,11 +26,11 @@ def register():
         try:
             cursor.execute('INSERT INTO users (username, password_hash) VALUES (%s, %s)', (username, hashed_password))
             mysql.connection.commit()
-            flash('Account created successfully!', 'success')
+            flash('Konto zostało utworzone pomyślnie!', 'success')
             return redirect(url_for('login'))
         except Exception as e:
-            flash('Username already exists or database error!', 'danger')
-            print(f"DB Error: {e}")
+            flash('Taka nazwa użytkownika już istnieje lub wystąpił błąd bazy danych!', 'danger')
+            print(f"Błąd bazy danych: {e}")
         finally:
             cursor.close()
 
@@ -56,9 +56,9 @@ def login():
                 login_user(user)
                 return redirect(url_for('home'))
             else:
-                flash('Incorrect password!', 'danger')
+                flash('Nieprawidłowe hasło!', 'danger')
         else:
-            flash('User not found!', 'warning')
+            flash('Nie znaleziono użytkownika o podanej nazwie.', 'warning')
 
     return render_template('login.html', form=form)
 
@@ -66,7 +66,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('Logged out!', 'info')
+    flash('Wylogowano!', 'info')
     return redirect(url_for('login'))
 
 from app.forms import ReviewForm
@@ -115,7 +115,7 @@ def album_detail(album_id):
 
     form = ReviewForm()
 
-    # Rozdziel logikę recenzji i komentarzy
+    # Rozdziel logikę dodawania recenzji i komentarzy
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
@@ -128,7 +128,7 @@ def album_detail(album_id):
                     VALUES (%s, %s, %s)
                 """, (review_id, current_user.id, content))
                 mysql.connection.commit()
-                flash("Comment added!", "success")
+                flash("Komentarz został dodany!", "success")
                 return redirect(url_for('album_detail', album_id=album_id))
 
         elif form_type == 'review':
@@ -139,7 +139,7 @@ def album_detail(album_id):
                     VALUES (%s, %s, %s, %s)
                 """, (current_user.id, album_id, form.rating.data, form.content.data))
                 mysql.connection.commit()
-                flash("Review added!", "success")
+                flash("Recenzja została dodana!", "success")
                 return redirect(url_for('album_detail', album_id=album_id))
 
     cursor.close()
@@ -208,17 +208,17 @@ def edit_review(review_id):
     review = cursor.fetchone()
 
     if not review:
-        flash("Review not found.", "warning")
+        flash("Nie znaleziono recenzji.", "warning")
         return redirect(url_for('home'))
 
     if review[0] != current_user.id:
-        flash("You can't edit someone else's review.", "danger")
+        flash("Nie możesz edytować cudzej recenzji.", "danger")
         return redirect(url_for('home'))
 
     form = ReviewForm()
     if request.method == 'GET':
-        form.rating.data = review[1]
-        form.content.data = review[2]
+        form.rating.data = review[2]
+        form.content.data = review[3]
 
     if form.validate_on_submit():
         cursor.execute("""
@@ -227,7 +227,7 @@ def edit_review(review_id):
             WHERE id = %s
         """, (form.rating.data, form.content.data, review_id))
         mysql.connection.commit()
-        flash("Review updated.", "success")
+        flash("Recenzja została zaktualizowana.", "success")
         return redirect(url_for('album_detail', album_id=review[1]))
 
     cursor.close()
@@ -241,16 +241,16 @@ def delete_review(review_id):
     review = cursor.fetchone()
 
     if not review:
-        flash("Review not found.", "warning")
+        flash("Nie znaleziono recenzji.", "warning")
         return redirect(url_for('home'))
 
     if review[0] != current_user.id and not current_user.is_admin:
-        flash("You can't delete someone else's review.", "danger")
+        flash("Nie możesz usunąć cudzej recenzji.", "danger")
         return redirect(url_for('home'))
 
     cursor.execute("DELETE FROM reviews WHERE id = %s", (review_id,))
     mysql.connection.commit()
-    flash("Review deleted.", "info")
+    flash("Recenzja została usunięta.", "info")
     return redirect(url_for('album_detail', album_id=review[1]))
 
 # Wyświetlenie użytkowników i statusu znajomości
@@ -302,10 +302,10 @@ def users():
                 "username": row[5]
             })
 
-    # Aktywność znajomych
+    # Aktywność znajomych (po polsku)
     friend_activity = []
     if friend_ids:
-        # Likes
+        # Polubienia
         cursor.execute("""
             SELECT u.username, a.title
             FROM liked_albums l
@@ -316,9 +316,9 @@ def users():
             LIMIT 10
         """, (tuple(friend_ids),))
         for username, album_title in cursor.fetchall():
-            friend_activity.append(f"{username} liked album '{album_title}'")
+            friend_activity.append(f"{username} polubił(a) album „{album_title}”")
 
-        # Listen later
+        # Do przesłuchania
         cursor.execute("""
             SELECT u.username, a.title
             FROM to_listen_albums t
@@ -329,13 +329,12 @@ def users():
             LIMIT 10
         """, (tuple(friend_ids),))
         for username, album_title in cursor.fetchall():
-            friend_activity.append(f"{username} added album '{album_title}' to Listen Later")
+            friend_activity.append(f"{username} dodał(a) album „{album_title}” do listy „Do przesłuchania”")
 
     # Wspólne polubione albumy
     shared_likes = []
     if friend_ids:
         for friend_id in friend_ids:
-            # Pobierz wspólne albumy polubione
             cursor.execute("""
                 SELECT a.id, a.title, u.username
                 FROM liked_albums l1
@@ -375,14 +374,14 @@ def add_friend(user_id):
            OR (sender_id = %s AND receiver_id = %s)
     """, (current_user.id, user_id, user_id, current_user.id))
     if cursor.fetchone():
-        flash("Already invited or connected.", "info")
+        flash("Zaproszenie zostało już wysłane lub jesteście już znajomymi.", "info")
     else:
         cursor.execute("""
             INSERT INTO friends (sender_id, receiver_id, status)
             VALUES (%s, %s, 'pending')
         """, (current_user.id, user_id))
         mysql.connection.commit()
-        flash("Friend request sent.", "success")
+        flash("Zaproszenie do znajomych zostało wysłane.", "success")
     cursor.close()
     return redirect(url_for('users'))
 
@@ -398,7 +397,7 @@ def accept_friend(sender_id):
     """, (sender_id, current_user.id))
     mysql.connection.commit()
     cursor.close()
-    flash("Friend request accepted!", "success")
+    flash("Zaproszenie zostało zaakceptowane.", "success")
     return redirect(url_for('users'))
 
 @app.route('/change_password', methods=['GET', 'POST'])
@@ -412,19 +411,19 @@ def change_password():
         cursor.close()
 
         if not data:
-            flash("User not found.", "danger")
+            flash("Nie znaleziono użytkownika.", "danger")
             return redirect(url_for('home'))
 
         stored_hash = data[0]
         if not check_password_hash(stored_hash, form.current_password.data):
-            flash("Current password is incorrect.", "danger")
+            flash("Obecne hasło jest nieprawidłowe.", "danger")
         else:
             new_hashed = generate_password_hash(form.new_password.data)
             cursor = mysql.connection.cursor()
             cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_hashed, current_user.id))
             mysql.connection.commit()
             cursor.close()
-            flash("Password updated successfully.", "success")
+            flash("Hasło zostało pomyślnie zmienione.", "success")
             return redirect(url_for('profile', user_id=current_user.id))
 
     return render_template('change_password.html', form=form)
@@ -437,16 +436,16 @@ def delete_comment(comment_id):
     comment = cursor.fetchone()
 
     if not comment:
-        flash("Comment not found.", "warning")
+        flash("Nie znaleziono komentarza.", "warning")
         return redirect(url_for('home'))
 
     if comment[0] != current_user.id and not current_user.is_admin:
-        flash("You can't delete this comment.", "danger")
+        flash("Nie możesz usunąć tego komentarza.", "danger")
         return redirect(url_for('home'))
 
     cursor.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
     mysql.connection.commit()
-    flash("Comment deleted.", "info")
+    flash("Komentarz został usunięty.", "info")
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/propose_album', methods=['GET', 'POST'])
@@ -463,7 +462,7 @@ def propose_album():
             form.release_date.data, form.cover_url.data, current_user.id
         ))
         mysql.connection.commit()
-        flash('Album proposal submitted! Waiting for admin approval.', 'info')
+        flash('Propozycja albumu została przesłana! Oczekuje na zatwierdzenie przez administratora.', 'info')
         return redirect(url_for('home'))
     return render_template('propose_album.html', form=form)
 
@@ -495,8 +494,9 @@ def approve_album(proposal_id):
         """, album)
         cursor.execute("DELETE FROM pending_albums WHERE id = %s", (proposal_id,))
         mysql.connection.commit()
-        flash('Album approved and added!', 'success')
+        flash('Album został zatwierdzony i dodany do listy!', 'success')
     return redirect(url_for('album_proposals'))
+
 
 @app.route('/admin/reject_album/<int:proposal_id>', methods=['POST'])
 @login_required
@@ -506,7 +506,7 @@ def reject_album(proposal_id):
     cursor = mysql.connection.cursor()
     cursor.execute("DELETE FROM pending_albums WHERE id = %s", (proposal_id,))
     mysql.connection.commit()
-    flash('Album proposal rejected and removed.', 'warning')
+    flash('Propozycja albumu została odrzucona i usunięta.', 'warning')
     return redirect(url_for('album_proposals'))
 
 @app.route('/like_album/<int:album_id>', methods=['POST'])
