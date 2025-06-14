@@ -1,33 +1,59 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Zaproponuj nowy album</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    
-    <div>
-        {{ form.title.label }}<br>
-        {{ form.title(size=40) }}
+<h2>🎶 Zaproponuj nowy album</h2>
+
+<div class="form-page">
+    <div class="form-card">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.title.label }}
+                {{ form.title(class="form-input", size=40) }}
+            </div>
+
+            <div class="form-group">
+                {{ form.artist.label }}
+                {{ form.artist(class="form-input", size=40) }}
+            </div>
+
+            <div class="form-group">
+                {{ form.genre.label }}
+                {{ form.genre(class="form-input", size=30) }}
+            </div>
+
+            <div class="form-group">
+                {{ form.release_date.label }} <span class="note">(RRRR-MM-DD)</span>
+                {{ form.release_date(class="form-input") }}
+            </div>
+
+            <div class="form-group">
+                {{ form.cover_url.label }}
+                {{ form.cover_url(class="form-input", size=60) }}
+            </div>
+
+            <div class="form-submit">
+                {{ form.submit(class="btn-primary") }}
+            </div>
+        </form>
     </div>
-    <div>
-        {{ form.artist.label }}<br>
-        {{ form.artist(size=40) }}
+
+    <div class="sidebar">
+        <h3>📌 Ostatnio dodane</h3>
+        {% for album in recent_albums %}
+            <div class="sidebar-album">
+                <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                    {% if album[3] %}
+                        <img src="{{ album[3] }}" alt="Okładka">
+                    {% endif %}
+                    <div>
+                        <strong>{{ album[1] }}</strong><br>
+                        <small>{{ album[2] }}</small>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
     </div>
-    <div>
-        {{ form.genre.label }}<br>
-        {{ form.genre(size=30) }}
-    </div>
-    <div>
-        {{ form.release_date.label }} (RRRR-MM-DD)<br>
-        {{ form.release_date() }}
-    </div>
-    <div>
-        {{ form.cover_url.label }}<br>
-        {{ form.cover_url(size=60) }}
-    </div>
-    <br>
-    <div>
-        {{ form.submit() }}
-    </div>
-</form>
+</div>
 {% endblock %}

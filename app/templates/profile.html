@@ -1,54 +1,73 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Profil: {{ user[0] }}</h2>
+<h2>{{ user[0] }}</h2>
 
-<h3>Recenzje:</h3>
-{% for review in reviews %}
-    <div>
-        <strong>{{ review[0] }} - {{ review[1] }}</strong><br>
-        Ocena: {{ review[2] }}/5<br>
-        {{ review[3] }}<br>
-        <small>{{ review[4] }}</small>
+<h3>📝 Recenzje:</h3>
+<div class="review-list">
+    {% for review in reviews %}
+        <div class="review-card">
+                {% if review[5] %}
+                  <a href="{{ url_for('album_detail', album_id=review[6]) }}">
+                      <img src="{{ review[5] }}" alt="Okładka" class="review-cover">
+                  </a>
+                {% endif %}
+                <div class="review--compact">
+                    <strong>{{ review[0] }} - {{ review[1] }}</strong><br>
+                    Ocena: {{ review[2] }}/5
+                    <p>{{ review[3] }}</p>
+                    <small>{{ review[4] }}</small>
+                </div>
+        </div>
+    {% else %}
+        <p>Brak recenzji.</p>
+    {% endfor %}
+</div>
+
+
+<div class="album-columns">
+    <div class="album-section">
+        <h3>❤️ Polubione albumy:</h3>
+        {% if liked_albums %}
+            <div class="album-grid">
+                {% for album in liked_albums %}
+                    <div class="album-card">
+                        {% if album[3] %}
+                            <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                                <img src="{{ album[3] }}" alt="Okładka">
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                            {{ album[1] }}<br><small>{{ album[2] }}</small>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Brak polubionych albumów.</p>
+        {% endif %}
     </div>
-    <hr>
-{% else %}
-    <p>Brak recenzji.</p>
-{% endfor %}
 
-<h3>Polubione albumy:</h3>
-{% if liked_albums %}
-    <ul>
-        {% for album in liked_albums %}
-            <li>
-                {% if album[3] %}
-                    <img src="{{ album[3] }}" alt="Okładka" style="height: 50px; vertical-align: middle;">
-                {% endif %}
-                <a href="{{ url_for('album_detail', album_id=album[0]) }}">
-                    {{ album[1] }} - {{ album[2] }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Brak polubionych albumów.</p>
-{% endif %}
-
-<h3>Do przesłuchania:</h3>
-{% if to_listen_albums %}
-    <ul>
-        {% for album in to_listen_albums %}
-            <li>
-                {% if album[3] %}
-                    <img src="{{ album[3] }}" alt="Okładka" style="height: 50px; vertical-align: middle;">
-                {% endif %}
-                <a href="{{ url_for('album_detail', album_id=album[0]) }}">
-                    {{ album[1] }} - {{ album[2] }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Brak albumów zapisanych do przesłuchania.</p>
-{% endif %}
+    <div class="album-section">
+        <h3>🎧 Do przesłuchania:</h3>
+        {% if to_listen_albums %}
+            <div class="album-grid">
+                {% for album in to_listen_albums %}
+                    <div class="album-card">
+                        {% if album[3] %}
+                            <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                                <img src="{{ album[3] }}" alt="Okładka">
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('album_detail', album_id=album[0]) }}">
+                            {{ album[1] }}<br><small>{{ album[2] }}</small>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Brak albumów zapisanych do przesłuchania.</p>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

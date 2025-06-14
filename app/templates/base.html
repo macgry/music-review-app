@@ -15,6 +15,7 @@
             <ul class="navbar">
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('home') }}">Strona główna</a></li>
+                    <li><a href="{{ url_for('albums') }}">Albumy</a></li>
                     <li><a href="{{ url_for('profile', user_id=current_user.id) }}">Mój profil</a></li>
                     <li><a href="{{ url_for('users') }}">Znajomi</a></li>
                     <li><a href="{{ url_for('propose_album') }}">Zaproponuj album</a></li>

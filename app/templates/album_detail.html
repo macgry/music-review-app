@@ -1,69 +1,90 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if album[5] %}
-    <img src="{{ album[5] }}" alt="Okładka" style="max-width: 200px; margin-bottom: 15px;">
-{% endif %}
-<h2>{{ album[1] }} - {{ album[2] }}</h2>
-<p><strong>Gatunek:</strong> {{ album[3] }} | <strong>Rok wydania:</strong> {{ album[4] }}</p>
+<div class="album-header">
+    {% if album[5] %}
+        <img src="{{ album[5] }}" alt="Okładka">
+    {% endif %}
+    <div class="album-info">
+        <h2>{{ album[1] }} – {{ album[2] }}</h2>
+        <p><strong>Gatunek:</strong> {{ album[3] }} | <strong>Rok:</strong> {{ album[4] }}</p>
 
-<form method="POST" action="{{ url_for('like_album', album_id=album[0]) }}" style="display:inline;">
-    <button type="submit">
-        ❤️ {% if album_liked %}Odlub{% else %}Polub{% endif %}
-    </button>
-</form>
+        <form method="POST" action="{{ url_for('like_album', album_id=album[0]) }}" style="display:inline;">
+            <button type="submit">❤️ {% if album_liked %}Odlub{% else %}Polub{% endif %}</button>
+        </form>
 
-<form method="POST" action="{{ url_for('toggle_listen_later', album_id=album[0]) }}" style="display:inline; margin-left: 10px;">
-    <button type="submit">
-        🎧 {% if album_in_listen_later %}Usuń z „Do przesłuchania”{% else %}Dodaj do „Do przesłuchania”{% endif %}
-    </button>
-</form>
+        <form method="POST" action="{{ url_for('toggle_listen_later', album_id=album[0]) }}" style="display:inline; margin-left: 10px;">
+            <button type="submit">🎧 {% if album_in_listen_later %}Usuń z „Do przesłuchania”{% else %}Dodaj do „Do przesłuchania”{% endif %}</button>
+        </form>
+    </div>
+</div>
 
 <h3>Napisz recenzję:</h3>
 <form method="POST">
     {{ form.hidden_tag() }}
     <input type="hidden" name="form_type" value="review">
-    {{ form.rating.label }} {{ form.rating(type="number", min="1", max="5") }}<br>
-    {{ form.content.label }}<br>
-    {{ form.content(rows=4, cols=40) }}<br>
-    {{ form.submit() }}
+    <div>
+        {{ form.rating.label }}
+        {{ form.rating(type="number", min="0.5", max="5", step="0.5") }}
+    </div>
+    <div>
+        {{ form.content.label }}<br>
+        {{ form.content(rows=4) }}
+    </div>
+    <div>
+        <button type="submit">Dodaj recenzję</button>
+    </div>
 </form>
 
 <h3>Recenzje:</h3>
 {% for review in reviews %}
-    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
-        <strong>{{ review[4] }}</strong> ocenił(a): {{ review[1] }}/5<br>
-        <p>{{ review[2] }}</p>
-        <small>{{ review[3] }}</small><br>
-
-        {% if review[5] == current_user.id or current_user.is_admin %}
-            <form method="POST" action="{{ url_for('delete_review', review_id=review[0]) }}" style="display:inline;">
-                <button type="submit">Usuń recenzję</button>
-            </form>
-        {% endif %}
-
-        <h4>Komentarze:</h4>
-        {% for comment in comments_by_review.get(review[0], []) %}
-            <div style="margin-left: 15px;">
-                <strong>{{ comment[2] }}</strong>: {{ comment[0] }}<br>
-                <small>{{ comment[1] }}</small>
-
-                {% if comment[3] == current_user.id or current_user.is_admin %}
-                    <form method="POST" action="{{ url_for('delete_comment', comment_id=comment[4]) }}" style="display:inline;">
-                        <button type="submit">Usuń komentarz</button>
+<div class="review-card-flex">
+    <div class="review-left">
+        <div class="review-header">
+            <div class="review-user">
+                <strong>{{ review[4] }}</strong> <span class="rating">ocenił(a): {{ review[1] }}/5</span>
+            </div>
+            <div class="review-meta">
+                <small>{{ review[3] }}</small>
+                {% if review[5] == current_user.id or current_user.is_admin %}
+                    <form method="POST" action="{{ url_for('delete_review', review_id=review[0]) }}">
+                        <button type="submit" title="Usuń recenzję">🗑</button>
                     </form>
                 {% endif %}
             </div>
-        {% else %}
-            <div style="margin-left: 15px;">Brak komentarzy.</div>
-        {% endfor %}
+        </div>
+        <p class="review-content">{{ review[2] }}</p>
+    </div>
 
-        <form method="POST" style="margin-top: 10px;">
+    <div class="review-right">
+        <h4>Komentarze:</h4>
+        <div class="comments-list">
+            {% for comment in comments_by_review.get(review[0], []) %}
+                <div class="comment">
+                    <div class="comment-body">
+                        <strong>{{ comment[2] }}</strong>: {{ comment[0] }}
+                    </div>
+                    <div class="comment-meta">
+                        <small>{{ comment[1] }}</small>
+                        {% if comment[3] == current_user.id or current_user.is_admin %}
+                            <form method="POST" action="{{ url_for('delete_comment', comment_id=comment[4]) }}">
+                                <button type="submit" title="Usuń komentarz">🗑</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="comment comment-empty">Brak komentarzy.</div>
+            {% endfor %}
+        </div>
+
+        <form method="POST" class="comment-form">
             <input type="hidden" name="form_type" value="comment">
             <input type="hidden" name="review_id" value="{{ review[0] }}">
-            <textarea name="content" rows="2" cols="50" placeholder="Dodaj komentarz..."></textarea><br>
-            <button type="submit">Dodaj komentarz</button>
+            <textarea name="content" rows="2" placeholder="Dodaj komentarz..."></textarea><br>
+            <button type="submit">💬 Dodaj komentarz</button>
         </form>
     </div>
+</div>
 {% endfor %}
 {% endblock %}

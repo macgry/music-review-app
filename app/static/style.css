@@ -1,9 +1,41 @@
+/* === Układ strony === */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #235c39;
+    color: #edfcbf;
+}
+
 main {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
+a {
+    color: #b2f2bb;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    background-color: #333;
+    color: #f1f1f1;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+/* === Nagłówek i nawigacja === */
 header {
     background-color: #1d4d31;
     padding: 15px 20px;
@@ -16,7 +48,10 @@ header {
     gap: 15px;
 }
 
-/* 🧭 Pozioma nawigacja jako przyciski */
+.logo {
+    height: 60px;
+}
+
 .navbar {
     list-style: none;
     display: flex;
@@ -41,58 +76,623 @@ header {
     text-decoration: none;
 }
 
-/* Inne ustawienia */
-body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background-color: #235c39;
-    color: #edfcbf;
-}
-
-a {
-    color: #b2f2bb;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-.logo {
-    height: 60px;
-}
-
-/* Flash messages */
-.flash.success { background-color: #2d733f; color: #bafac5; }
-.flash.warning { background-color: #856404; color: #fff3cd; }
-.flash.danger  { background-color: #721c24; color: #f8d7da; }
-.flash.info    { background-color: #0c5460; color: #d1ecf1; }
-
-/* Albumy w siatce */
+/* === Albumy (siatka i karta) === */
 .album-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+    grid-template-columns: repeat(5, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
 }
 
 .album-card {
-    background-color: #1a3f2c;
-    border: 1px solid #edfcbf55;
+    background-color: #1c1c1c;
+    border: 1px solid #444;
     padding: 10px;
     border-radius: 8px;
     text-align: center;
     color: #edfcbf;
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.album-card a:hover {
-    color: #ffffff;
 }
 
 .album-card img {
     max-width: 100%;
     height: auto;
     border-radius: 4px;
+}
+
+/* === Okładka i info albumu (strona szczegółowa) === */
+.album-header {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.album-header img {
+    width: 260px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.album-info h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.album-info p {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.album-info form button {
+    font-size: 16px;
+    padding: 10px 20px;
+}
+
+/* === Formularze === */
+form textarea,
+form input[type="number"] {
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 6px;
+    width: 100%;
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+    border: 1px solid #444;
+}
+
+form label {
+    font-size: 18px;
+    display: block;
+    margin: 15px 0 5px 0px;
+}
+
+form button {
+    font-size: 16px;
+    padding: 10px 20px;
+    margin-top: 10px;
+}
+
+/* === Recenzje i komentarze === */
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review-card {
+    display: flex;
+    align-items: flex-start;
+    background-color: #222;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 14px;
+    gap: 15px;
+    font-size: 15px;
+}
+
+.review-cover {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.review-content p {
+    font-size: 15px;
+}
+
+.review-card small {
+    color: #bbb;
+    font-size: 13px;
+}
+
+.review-card .comment {
+    margin-top: 10px;
+    margin-left: 20px;
+    font-size: 13px;
+    color: #ccc;
+}
+
+.review-card .comment strong {
+    color: #eee;
+    font-weight: bold;
+}
+
+.review-card textarea {
+    font-size: 14px;
+    padding: 8px;
+    margin-top: 8px;
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+    border: 1px solid #444;
+    border-radius: 6px;
+    resize: vertical;
+}
+
+/* Przyciski w komentarzach */
+.review-card form button {
+    font-size: 13px;
+    padding: 6px 12px;
+    margin-top: 5px;
+}
+
+/* === Kolumny albumów w profilu === */
+.album-columns {
+    display: flex;
+    gap: 30px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.album-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+/* === Winylowe oceny === */
+.rating-vinyls {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.rating-vinyls input {
+    display: none;
+}
+
+.rating-vinyls label {
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+    cursor: pointer;
+}
+
+.rating-vinyls label.full {
+    background-image: url('{{ url_for("static", filename="vinyl-full.png") }}');
+}
+
+.rating-vinyls label.half {
+    background-image: url('{{ url_for("static", filename="vinyl-half.png") }}');
+}
+
+.review-card-flex {
+    display: flex;
+    justify-content: space-between;
+    background-color: #1f1f1f;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    gap: 30px;
+}
+
+.review-left {
+    flex: 2;
+}
+
+.review-right {
+    flex: 1.2;
+    border-left: 1px solid #333;
+    padding-left: 20px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.review-user {
+    font-size: 20px;
+    font-weight: bold;
+    color: #edfcbf;
+}
+
+.review-user .rating {
+    display: inline;
+    font-size: 18px;
+    font-weight: normal;
+    margin-left: 5px;
+}
+
+.review-meta {
+    font-size: 13px;
+    color: #aaa;
+    text-align: right;
+}
+
+.review-meta form {
+    display: inline;
+    margin-left: 6px;
+}
+
+.review-content {
+    font-size: 16px;
+    color: #f0f0f0;
+    margin-top: 10px;
+}
+
+.review-right h4 {
+    margin-top: 0;
+    color: #edfcbf;
+    font-size: 15px;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.comment {
+    background-color: #2a2a2a;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-meta {
+    text-align: right;
+    font-size: 12px;
+    color: #999;
+    margin-left: 15px;
+}
+
+.comment-empty {
+    font-style: italic;
+    color: #666;
+    font-size: 13px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 8px;
+    margin-top: 10px;
+    resize: vertical;
+}
+
+.comment-form button {
+    margin-top: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.friends-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.friends-block {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.friends-block h3 {
+    margin-top: 0;
+    color: #edfcbf;
+}
+
+.friends-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.friend-card {
+    background-color: #2a2a2a;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.friend-card-header {
+    font-weight: bold;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.friend-card-content {
+    font-size: 14px;
+    color: #ccc;
+}
+
+.friend-card-meta {
+    font-size: 12px;
+    color: #999;
+    text-align: right;
+}
+
+.activity-list {
+    list-style: none;
+    padding-left: 0;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.shared-list {
+    list-style: none;
+    padding-left: 0;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.friend-list {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.friend-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2b2b2b;
+    padding: 10px 15px;
+    border-radius: 8px;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.badge.friend {
+    background-color: #1d7044;
+    color: #edfcbf;
+}
+
+.badge.accept {
+    background-color: #326832;
+    color: #c4fccc;
+}
+
+.badge.waiting {
+    background-color: #444;
+    color: #ccc;
+}
+
+.badge.add {
+    background-color: #285c8a;
+    color: #d8efff;
+}
+
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.form-card {
+    background-color: #1f1f1f;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 30px 40px;
+    max-width: 700px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    color: #edfcbf;
+    margin-bottom: 6px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #5af28c;
+}
+
+.form-submit {
+    text-align: right;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    padding: 10px 24px;
+    background-color: #2e7047;
+    color: #edfcbf;
+    font-weight: bold;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-primary:hover {
+    background-color: #3e8d5b;
+}
+
+.note {
+    font-size: 12px;
+    color: #aaa;
+    margin-left: 5px;
+}
+
+.form-page {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.sidebar {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    padding: 20px;
+    border-radius: 12px;
+    width: 250px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+}
+
+.sidebar h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #edfcbf;
+}
+
+.sidebar-album {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.sidebar-album img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.sidebar-album div {
+    font-size: 14px;
+    color: #edfcbf;
+}
+
+.sidebar-album a {
+    display: flex;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.sidebar-album a:hover {
+    text-decoration: underline;
+}
+
+.flash-container {
+    margin: 30px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.flash {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Style wg kategorii */
+.flash.success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.flash.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+
+.flash.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.flash.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.filter-form {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.filter-form input {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background-color: #1c1c1c;
+    color: #fff;
+}
+
+.filter-form button {
+    background-color: #333;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.filter-form button:hover {
+    background-color: #555;
+}
+
+.pagination {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.pagination a,
+.pagination strong {
+    margin: 0 5px;
+    padding: 6px 12px;
+    background-color: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.pagination strong {
+    background-color: #333;
+}
+
+.filter-form select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background-color: #1c1c1c;
+    color: #fff;
 }

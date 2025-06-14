@@ -6,13 +6,18 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route('/')
-@login_required
 def home():
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM albums")
+    cursor.execute("""
+        SELECT id, title, artist, genre, release_date, cover_url
+        FROM albums
+        ORDER BY RAND()
+        LIMIT 15
+    """)
     albums = cursor.fetchall()
     cursor.close()
     return render_template('home.html', albums=albums)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -164,7 +169,7 @@ def profile(user_id):
 
     # Recenzje użytkownika
     cursor.execute("""
-        SELECT a.title, a.artist, r.rating, r.content, r.created_at
+        SELECT a.title, a.artist, r.rating, r.content, r.created_at, a.cover_url, a.id
         FROM reviews r
         JOIN albums a ON r.album_id = a.id
         WHERE r.user_id = %s
@@ -270,7 +275,7 @@ def users():
     for sender_id, receiver_id, status in relations:
         relation_map[(sender_id, receiver_id)] = status
 
-    # Pobierz ID znajomych zaakceptowanych
+    # Pobierz ID zaakceptowanych znajomych
     friend_ids = []
     for (s_id, r_id), status in relation_map.items():
         if status == "accepted":
@@ -302,7 +307,7 @@ def users():
                 "username": row[5]
             })
 
-    # Aktywność znajomych (po polsku)
+    # Aktywność znajomych
     friend_activity = []
     if friend_ids:
         # Polubienia
@@ -452,6 +457,7 @@ def delete_comment(comment_id):
 @login_required
 def propose_album():
     form = AlbumProposalForm()
+
     if form.validate_on_submit():
         cursor = mysql.connection.cursor()
         cursor.execute("""
@@ -462,9 +468,22 @@ def propose_album():
             form.release_date.data, form.cover_url.data, current_user.id
         ))
         mysql.connection.commit()
+        cursor.close()
         flash('Propozycja albumu została przesłana! Oczekuje na zatwierdzenie przez administratora.', 'info')
         return redirect(url_for('home'))
-    return render_template('propose_album.html', form=form)
+
+    # Pobranie ostatnio dodanych albumów
+    cursor = mysql.connection.cursor()
+    cursor.execute("""
+        SELECT id, title, artist, cover_url
+        FROM albums
+        ORDER BY id DESC
+        LIMIT 5
+    """)
+    recent_albums = cursor.fetchall()
+    cursor.close()
+
+    return render_template('propose_album.html', form=form, recent_albums=recent_albums)
 
 @app.route('/admin/album_proposals')
 @login_required
@@ -532,3 +551,64 @@ def toggle_listen_later(album_id):
         cursor.execute("INSERT INTO to_listen_albums (user_id, album_id) VALUES (%s, %s)", (current_user.id, album_id))
     mysql.connection.commit()
     return redirect(request.referrer)
+
+@app.route('/albums')
+def albums():
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '').strip()
+    genre = request.args.get('genre', '').strip()
+    artist = request.args.get('artist', '').strip()
+
+    cursor = mysql.connection.cursor()
+
+    # Pobierz gatunki i artystów
+    cursor.execute("SELECT DISTINCT genre FROM albums ORDER BY genre")
+    genres = [row[0] for row in cursor.fetchall()]
+
+    cursor.execute("SELECT DISTINCT artist FROM albums ORDER BY artist")
+    artists = [row[0] for row in cursor.fetchall()]
+
+    # Wyszukiwanie z filtrowaniem
+    query = "SELECT * FROM albums WHERE 1=1"
+    params = []
+
+    if search:
+        query += " AND (title LIKE %s OR artist LIKE %s)"
+        params.append(f"%{search}%")
+        params.append(f"%{search}%")
+    if genre:
+        query += " AND genre = %s"
+        params.append(genre)
+    if artist:
+        query += " AND artist = %s"
+        params.append(artist)
+
+    query += " ORDER BY release_date DESC LIMIT %s OFFSET %s"
+    params += [20, (page - 1) * 20]
+
+    cursor.execute(query, params)
+    albums = cursor.fetchall()
+
+    # Liczba stron
+    count_query = "SELECT COUNT(*) FROM albums WHERE 1=1"
+    count_params = []
+
+    if search:
+        query += " AND (title LIKE %s OR artist LIKE %s)"
+        params.append(f"%{search}%")
+        params.append(f"%{search}%")
+    if genre:
+        count_query += " AND genre = %s"
+        count_params.append(genre)
+    if artist:
+        count_query += " AND artist = %s"
+        count_params.append(artist)
+
+    cursor.execute(count_query, count_params)
+    total = cursor.fetchone()[0]
+    total_pages = (total + 19) // 20
+    cursor.close()
+
+    return render_template("albums.html", albums=albums, page=page, total_pages=total_pages,
+                           search=search, genre=genre, artist=artist,
+                           genres=genres, artists=artists)

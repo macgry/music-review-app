@@ -2,10 +2,24 @@
 
 {% block content %}
 <h2>Logowanie</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.username.label }} {{ form.username() }}<br>
-    {{ form.password.label }} {{ form.password() }}<br>
-    {{ form.submit() }}
-</form>
+
+<div class="form-card">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-input") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-input") }}
+        </div>
+
+        <div class="form-submit">
+            {{ form.submit(class="btn-primary") }}
+        </div>
+    </form>
+</div>
 {% endblock %}

@@ -1,12 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Zarejestruj się</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.username.label }} {{ form.username() }}<br>
-    {{ form.password.label }} {{ form.password() }}<br>
-    {{ form.confirm.label }} {{ form.confirm() }}<br>
-    {{ form.submit() }}
-</form>
+<h2>Rejestracja</h2>
+
+<div class="form-card">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-input") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-input") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.confirm.label }}
+            {{ form.confirm(class="form-input") }}
+        </div>
+
+        <div class="form-submit">
+            {{ form.submit(class="btn-primary") }}
+        </div>
+    </form>
+</div>
 {% endblock %}
