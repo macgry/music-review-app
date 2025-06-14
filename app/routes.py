@@ -461,11 +461,12 @@ def propose_album():
     if form.validate_on_submit():
         cursor = mysql.connection.cursor()
         cursor.execute("""
-            INSERT INTO pending_albums (title, artist, genre, release_date, cover_url, submitted_by)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO pending_albums (title, artist, genre, release_date, cover_url, spotify_url, youtube_url, submitted_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             form.title.data, form.artist.data, form.genre.data,
-            form.release_date.data, form.cover_url.data, current_user.id
+            form.release_date.data, form.cover_url.data, form.spotify_url.data, form.youtube_url.data,
+            current_user.id
         ))
         mysql.connection.commit()
         cursor.close()

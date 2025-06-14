@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, DateField, TextAreaField, IntegerField
-from wtforms.validators import DataRequired, Length, EqualTo, NumberRange, URL
+from wtforms.validators import DataRequired, Length, EqualTo, NumberRange, URL, Optional
 
 class RegisterForm(FlaskForm):
     username = StringField('Nazwa użytkownika', validators=[DataRequired(), Length(min=4, max=25)])
@@ -35,3 +35,5 @@ class AlbumProposalForm(FlaskForm):
     release_date = DateField('Data wydania', format='%Y-%m-%d')
     cover_url = StringField('URL okładki', validators=[URL(require_tld=True, message='Podaj poprawny adres URL')])
     submit = SubmitField('Zaproponuj album')
+    spotify_url = StringField('Spotify URL', validators=[Optional(), URL()])
+    youtube_url = StringField('YouTube URL', validators=[Optional(), URL()])
