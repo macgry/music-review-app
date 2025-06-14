@@ -6,16 +6,27 @@
         <img src="{{ album[5] }}" alt="Okładka">
     {% endif %}
     <div class="album-info">
-        <h2>{{ album[1] }} – {{ album[2] }}</h2>
-        <p><strong>Gatunek:</strong> {{ album[3] }} | <strong>Rok:</strong> {{ album[4] }}</p>
+    <h2>{{ album[1] }} – {{ album[2] }}</h2>
+    <p><strong>Gatunek:</strong> {{ album[3] }} | <strong>Rok:</strong> {{ album[4] }}</p>
 
-        <form method="POST" action="{{ url_for('like_album', album_id=album[0]) }}" style="display:inline;">
-            <button type="submit">❤️ {% if album_liked %}Odlub{% else %}Polub{% endif %}</button>
-        </form>
+    <form method="POST" action="{{ url_for('like_album', album_id=album[0]) }}" style="display:inline;">
+        <button type="submit">❤️ {% if album_liked %}Odlub{% else %}Polub{% endif %}</button>
+    </form>
 
-        <form method="POST" action="{{ url_for('toggle_listen_later', album_id=album[0]) }}" style="display:inline; margin-left: 10px;">
-            <button type="submit">🎧 {% if album_in_listen_later %}Usuń z „Do przesłuchania”{% else %}Dodaj do „Do przesłuchania”{% endif %}</button>
-        </form>
+    <form method="POST" action="{{ url_for('toggle_listen_later', album_id=album[0]) }}" style="display:inline; margin-left: 10px;">
+        <button type="submit">🎧 {% if album_in_listen_later %}Usuń z „Do przesłuchania”{% else %}Dodaj do „Do przesłuchania”{% endif %}</button>
+    </form>
+
+    {% if album[6] or album[7] %}
+    <div style="margin-top: 15px;">
+        {% if album[6] %}
+            <a href="{{ album[6] }}" target="_blank" class="btn-link">🎵 Odtwórz na Spotify</a>
+        {% endif %}
+        {% if album[7] %}
+            <a href="{{ album[7] }}" target="_blank" class="btn-link" style="margin-left: 10px;">▶️ Odtwórz na YouTube</a>
+        {% endif %}
+    </div>
+    {% endif %}
     </div>
 </div>
 
@@ -25,7 +36,7 @@
     <input type="hidden" name="form_type" value="review">
     <div>
         {{ form.rating.label }}
-        {{ form.rating(type="number", min="0.5", max="5", step="0.5") }}
+        {{ form.rating(type="number", min="1", max="5", step="1") }}
     </div>
     <div>
         {{ form.content.label }}<br>

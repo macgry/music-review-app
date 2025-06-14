@@ -696,3 +696,20 @@ form button {
     background-color: #1c1c1c;
     color: #fff;
 }
+
+.btn-link {
+    display: inline-block;
+    background-color: #333;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 15px;
+}
+
+.btn-link:hover {
+    background-color: #555;
+    color: #ffffff;
+    text-decoration: none;
+}
